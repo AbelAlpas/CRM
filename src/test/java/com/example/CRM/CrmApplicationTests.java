@@ -6,12 +6,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import com.example.CRM.user.repository.RoleRepository;
 import com.example.CRM.user.repository.UserRepository;
 import com.example.CRM.user.service.UserService;
+import com.example.CRM.lead.repository.LeadRepository;
 
 @SpringBootTest
 class CrmApplicationTests {
 	@MockBean UserRepository userRepository;
 	@MockBean RoleRepository roleRepository;
 	@MockBean UserService userService;
+	@MockBean LeadRepository leadRepository;
 
 	@Test
 	void contextLoads() {

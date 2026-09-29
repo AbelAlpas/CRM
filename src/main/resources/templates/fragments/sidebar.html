@@ -7,7 +7,7 @@
     </a>
     <nav class="nav nav-pills flex-column gap-1" aria-label="Navegacion principal">
         <a class="nav-link text-white" th:classappend="${activeModule == 'dashboard'} ? ' active bg-primary' : ''" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-        <a class="nav-link text-white-50 disabled" href="#" aria-disabled="true"><i class="bi bi-person-lines-fill me-2"></i>Leads</a>
+        <a class="nav-link text-white" th:classappend="${activeModule == 'leads'} ? ' active bg-primary' : ''" th:href="@{/leads}"><i class="bi bi-person-lines-fill me-2"></i>Leads</a>
         <a class="nav-link text-white-50 disabled" href="#" aria-disabled="true"><i class="bi bi-people me-2"></i>Clientes</a>
         <a class="nav-link text-white-50 disabled" href="#" aria-disabled="true"><i class="bi bi-briefcase me-2"></i>Oportunidades</a>
         <a class="nav-link text-white-50 disabled" href="#" aria-disabled="true"><i class="bi bi-kanban me-2"></i>Pipeline</a>

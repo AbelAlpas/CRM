@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.CRM.user.repository.RoleRepository;
 import com.example.CRM.user.repository.UserRepository;
 import com.example.CRM.user.service.UserService;
+import com.example.CRM.lead.repository.LeadRepository;
 import com.example.CRM.security.service.DatabaseUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ class SecurityIntegrationTests {
     @MockBean UserRepository userRepository;
     @MockBean RoleRepository roleRepository;
     @MockBean UserService userService;
+    @MockBean LeadRepository leadRepository;
     @MockBean DatabaseUserDetailsService databaseUserDetailsService;
     @Autowired PasswordEncoder passwordEncoder;
 

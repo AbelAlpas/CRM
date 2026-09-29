@@ -1,4 +1,13 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
-<main><div class="alert alert-danger" role="alert"><h1 class="h4">No se pudo completar la solicitud</h1><p class="mb-0" th:text="${message}">Intentalo nuevamente.</p></div></main>
+<!doctype html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: shell(~{::main})}"
+>
+  <main>
+    <div class="alert alert-danger" role="alert">
+      <h1 class="h4">No se pudo completar la solicitud</h1>
+      <p class="mb-0" th:text="${message}">Intentalo nuevamente.</p>
+    </div>
+  </main>
 </html>
