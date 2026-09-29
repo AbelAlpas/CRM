@@ -1,0 +1,5 @@
+:root { --crm-sidebar-width: 16rem; }
+.crm-sidebar { width: var(--crm-sidebar-width); flex: 0 0 var(--crm-sidebar-width); }
+.crm-sidebar .nav-link { border-radius: .375rem; }
+.crm-login-card { width: 100%; max-width: 26rem; }
+@media (max-width: 991.98px) { .crm-sidebar { width: 100%; flex-basis: auto; } }
