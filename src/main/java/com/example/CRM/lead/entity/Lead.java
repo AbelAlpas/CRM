@@ -51,6 +51,7 @@ public class Lead {
     public User getAssignedTo() { return assignedTo; } public void setAssignedTo(User value) { assignedTo = value; }
     public User getCreatedBy() { return createdBy; } public void setCreatedBy(User value) { createdBy = value; }
     public OffsetDateTime getConvertedAt() { return convertedAt; }
+    public void setConvertedAt(OffsetDateTime value) { convertedAt = value; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

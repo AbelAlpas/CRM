@@ -4,6 +4,7 @@ import com.example.CRM.lead.entity.LeadSource;
 import com.example.CRM.lead.entity.LeadStatus;
 import com.example.CRM.lead.service.LeadService;
 import com.example.CRM.user.service.UserService;
+import com.example.CRM.client.service.ClientService;
 import jakarta.validation.Valid;
 import java.util.Arrays;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +28,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class LeadController {
     private final LeadService leads;
     private final UserService users;
+    private final ClientService clients;
 
-    public LeadController(LeadService leads, UserService users) { this.leads = leads; this.users = users; }
+    public LeadController(LeadService leads, UserService users, ClientService clients) { this.leads = leads; this.users = users; this.clients = clients; }
 
     @GetMapping
     public String list(@RequestParam(required = false) String q, @RequestParam(required = false) LeadStatus status,
@@ -49,7 +51,7 @@ public class LeadController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Authentication authentication, Model model) { model.addAttribute("pageTitle", "Detalle del Lead"); model.addAttribute("activeModule", "leads"); model.addAttribute("lead", leads.findById(id, authentication)); return "leads/detail"; }
+    public String detail(@PathVariable Long id, Authentication authentication, Model model) { var lead = leads.findById(id, authentication); model.addAttribute("pageTitle", "Detalle del Lead"); model.addAttribute("activeModule", "leads"); model.addAttribute("lead", lead); model.addAttribute("originClient", clients.findBySourceLeadId(id)); model.addAttribute("canConvert", lead.getStatus() == LeadStatus.QUALIFIED && canManage(authentication) || lead.getStatus() == LeadStatus.QUALIFIED && isAssignedSales(lead, authentication)); return "leads/detail"; }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Authentication authentication, Model model) { var lead = leads.findById(id, authentication); addCommonModel(model); model.addAttribute("leadForm", toForm(lead)); model.addAttribute("leadId", id); model.addAttribute("editing", true); model.addAttribute("canAssign", canManage(authentication)); return "leads/form"; }
@@ -66,4 +68,5 @@ public class LeadController {
     private void addCommonModel(Model model) { model.addAttribute("pageTitle", "Leads"); model.addAttribute("activeModule", "leads"); model.addAttribute("statuses", Arrays.stream(LeadStatus.values()).filter(s -> s != LeadStatus.CONVERTED).toList()); model.addAttribute("sources", LeadSource.values()); model.addAttribute("salesUsers", users.findAll()); }
     private LeadForm toForm(com.example.CRM.lead.entity.Lead lead) { var form = new LeadForm(); form.setFirstName(lead.getFirstName()); form.setLastName(lead.getLastName()); form.setCompanyName(lead.getCompanyName()); form.setEmail(lead.getEmail()); form.setPhone(lead.getPhone()); form.setSource(lead.getSource()); form.setStatus(lead.getStatus()); form.setNotes(lead.getNotes()); form.setAssignedToId(lead.getAssignedTo() == null ? null : lead.getAssignedTo().getId()); return form; }
     private boolean canManage(Authentication a) { return a.getAuthorities().stream().anyMatch(x -> x.getAuthority().equals("ROLE_ADMIN") || x.getAuthority().equals("ROLE_MANAGER")); }
+    private boolean isAssignedSales(com.example.CRM.lead.entity.Lead lead, Authentication a) { return a.getAuthorities().stream().anyMatch(x -> x.getAuthority().equals("ROLE_SALES")) && lead.getAssignedTo() != null && lead.getAssignedTo().getEmail().equalsIgnoreCase(a.getName()); }
 }

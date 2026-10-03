@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,7 +17,7 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     @EntityGraph(attributePaths = {"assignedTo", "createdBy"})
     @Query("""
         select l from Lead l
-        where (:term is null or lower(l.firstName) like lower(concat('%', :term, '%'))
+        where (coalesce(:term, '') = '' or lower(l.firstName) like lower(concat('%', :term, '%'))
             or lower(l.lastName) like lower(concat('%', :term, '%'))
             or lower(l.companyName) like lower(concat('%', :term, '%'))
             or lower(l.email) like lower(concat('%', :term, '%'))
@@ -31,4 +33,8 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
 
     @EntityGraph(attributePaths = {"assignedTo", "createdBy"})
     Optional<Lead> findWithUsersById(Long id);
+
+    @EntityGraph(attributePaths = {"assignedTo", "createdBy"})
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Lead> findWithUsersForUpdateById(Long id);
 }
