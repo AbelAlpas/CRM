@@ -1,4 +1,141 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
-<main><div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1" th:text="${client.clientType.name() == 'COMPANY' ? client.companyName : client.firstName + (client.lastName != null ? ' ' + client.lastName : '')}">Cliente</h1><p class="text-body-secondary mb-0" th:text="${client.clientType.label}">Persona</p></div><a class="btn btn-outline-primary" th:href="@{/clients/{id}/edit(id=${client.id})}"><i class="bi bi-pencil me-1"></i>Editar</a></div><div class="row g-3"><div class="col-lg-8"><div class="card"><div class="card-body"><h2 class="h5 mb-3">Información del cliente</h2><dl class="row mb-0"><dt class="col-sm-4">Tipo</dt><dd class="col-sm-8" th:text="${client.clientType.label}">Persona</dd><dt class="col-sm-4">Nombres</dt><dd class="col-sm-8" th:text="${client.firstName ?: '-'}">-</dd><dt class="col-sm-4">Apellidos</dt><dd class="col-sm-8" th:text="${client.lastName ?: '-'}">-</dd><dt class="col-sm-4">Empresa</dt><dd class="col-sm-8" th:text="${client.companyName ?: '-'}">-</dd><dt class="col-sm-4">Documento</dt><dd class="col-sm-8" th:text="${client.documentNumber ?: '-'}">-</dd><dt class="col-sm-4">Email</dt><dd class="col-sm-8" th:text="${client.email ?: '-'}">-</dd><dt class="col-sm-4">Teléfono</dt><dd class="col-sm-8" th:text="${client.phone ?: '-'}">-</dd><dt class="col-sm-4">Dirección</dt><dd class="col-sm-8" th:text="${client.address ?: '-'}">-</dd><dt class="col-sm-4">Vendedor</dt><dd class="col-sm-8" th:text="${client.assignedTo != null ? client.assignedTo.firstName + ' ' + client.assignedTo.lastName : 'Sin asignar'}">-</dd></dl></div></div><div class="card mt-3" th:if="${client.sourceLead != null}"><div class="card-body"><h2 class="h5">Origen del cliente</h2><p class="mb-0">Convertido desde <a th:href="@{/leads/{id}(id=${client.sourceLead.id})}" th:text="${'Lead #' + client.sourceLead.id}">Lead</a>.</p></div></div></div><div class="col-lg-4"><div class="card"><div class="card-body"><h2 class="h5 mb-3">Estado</h2><span class="badge mb-3" th:classappend="${client.active} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${client.active ? 'Activo' : 'Inactivo'}">Activo</span><form method="post" th:if="${client.active}" th:action="@{/clients/{id}/deactivate(id=${client.id})}"><button class="btn btn-outline-danger w-100" type="submit" onclick="return confirm('¿Desactivar este Cliente?');"><i class="bi bi-person-dash me-1"></i>Desactivar</button></form><form method="post" th:unless="${client.active}" th:action="@{/clients/{id}/activate(id=${client.id})}"><button class="btn btn-outline-success w-100" type="submit"><i class="bi bi-person-check me-1"></i>Activar</button></form><hr><small class="text-body-secondary d-block">Creado por: <span th:text="${client.createdBy != null ? client.createdBy.firstName + ' ' + client.createdBy.lastName : '-'}">-</span></small><small class="text-body-secondary d-block">Creado: <span th:text="${#temporals.format(client.createdAt, 'dd/MM/yyyy HH:mm')}">-</span></small><small class="text-body-secondary d-block">Actualizado: <span th:text="${#temporals.format(client.updatedAt, 'dd/MM/yyyy HH:mm')}">-</span></small></div></div></div></div></main>
+<!doctype html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: shell(~{::main})}"
+>
+  <main>
+    <div
+      th:if="${successMessage}"
+      class="alert alert-success"
+      th:text="${successMessage}"
+    ></div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1
+          class="h3 mb-1"
+          th:text="${client.clientType.name() == 'COMPANY' ? client.companyName : client.firstName + (client.lastName != null ? ' ' + client.lastName : '')}"
+        >
+          Cliente
+        </h1>
+        <p
+          class="text-body-secondary mb-0"
+          th:text="${client.clientType.label}"
+        >
+          Persona
+        </p>
+      </div>
+      <a
+        class="btn btn-outline-primary"
+        th:href="@{/clients/{id}/edit(id=${client.id})}"
+        ><i class="bi bi-pencil me-1"></i>Editar</a
+      >
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Información del cliente</h2>
+            <dl class="row mb-0">
+              <dt class="col-sm-4">Tipo</dt>
+              <dd class="col-sm-8" th:text="${client.clientType.label}">
+                Persona
+              </dd>
+              <dt class="col-sm-4">Nombres</dt>
+              <dd class="col-sm-8" th:text="${client.firstName ?: '-'}">-</dd>
+              <dt class="col-sm-4">Apellidos</dt>
+              <dd class="col-sm-8" th:text="${client.lastName ?: '-'}">-</dd>
+              <dt class="col-sm-4">Empresa</dt>
+              <dd class="col-sm-8" th:text="${client.companyName ?: '-'}">-</dd>
+              <dt class="col-sm-4">Documento</dt>
+              <dd class="col-sm-8" th:text="${client.documentNumber ?: '-'}">
+                -
+              </dd>
+              <dt class="col-sm-4">Email</dt>
+              <dd class="col-sm-8" th:text="${client.email ?: '-'}">-</dd>
+              <dt class="col-sm-4">Teléfono</dt>
+              <dd class="col-sm-8" th:text="${client.phone ?: '-'}">-</dd>
+              <dt class="col-sm-4">Dirección</dt>
+              <dd class="col-sm-8" th:text="${client.address ?: '-'}">-</dd>
+              <dt class="col-sm-4">Vendedor</dt>
+              <dd
+                class="col-sm-8"
+                th:text="${client.assignedTo != null ? client.assignedTo.firstName + ' ' + client.assignedTo.lastName : 'Sin asignar'}"
+              >
+                -
+              </dd>
+            </dl>
+          </div>
+        </div>
+        <div class="card mt-3" th:if="${client.sourceLead != null}">
+          <div class="card-body">
+            <h2 class="h5">Origen del cliente</h2>
+            <p class="mb-0">
+              Convertido desde
+              <a
+                th:href="@{/leads/{id}(id=${client.sourceLead.id})}"
+                th:text="${'Lead #' + client.sourceLead.id}"
+                >Lead</a
+              >.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Estado</h2>
+            <span
+              class="badge mb-3"
+              th:classappend="${client.active} ? ' text-bg-success' : ' text-bg-secondary'"
+              th:text="${client.active ? 'Activo' : 'Inactivo'}"
+              >Activo</span
+            >
+            <form
+              method="post"
+              th:if="${client.active}"
+              th:action="@{/clients/{id}/deactivate(id=${client.id})}"
+            >
+              <button
+                class="btn btn-outline-danger w-100"
+                type="submit"
+                onclick="return confirm('¿Desactivar este Cliente?');"
+              >
+                <i class="bi bi-person-dash me-1"></i>Desactivar
+              </button>
+            </form>
+            <form
+              method="post"
+              th:unless="${client.active}"
+              th:action="@{/clients/{id}/activate(id=${client.id})}"
+            >
+              <button class="btn btn-outline-success w-100" type="submit">
+                <i class="bi bi-person-check me-1"></i>Activar
+              </button>
+            </form>
+            <hr />
+            <small class="text-body-secondary d-block"
+              >Creado por:
+              <span
+                th:text="${client.createdBy != null ? client.createdBy.firstName + ' ' + client.createdBy.lastName : '-'}"
+                >-</span
+              ></small
+            ><small class="text-body-secondary d-block"
+              >Creado:
+              <span
+                th:text="${#temporals.format(client.createdAt, 'dd/MM/yyyy HH:mm')}"
+                >-</span
+              ></small
+            ><small class="text-body-secondary d-block"
+              >Actualizado:
+              <span
+                th:text="${#temporals.format(client.updatedAt, 'dd/MM/yyyy HH:mm')}"
+                >-</span
+              ></small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 </html>

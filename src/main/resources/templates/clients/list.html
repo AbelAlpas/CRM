@@ -1,4 +1,213 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
-<main><div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Clientes</h1><p class="text-body-secondary mb-0">Personas y empresas con relación comercial.</p></div><a class="btn btn-primary" th:href="@{/clients/new}"><i class="bi bi-plus-lg me-1"></i>Nuevo Cliente</a></div><form class="card card-body mb-4" method="get" th:action="@{/clients}"><div class="row g-2 align-items-end"><div class="col-lg-4"><label class="form-label" for="q">Buscar</label><input class="form-control" id="q" name="q" th:value="${q}" placeholder="Nombre, empresa, documento o email"></div><div class="col-md-3 col-lg-2"><label class="form-label" for="type">Tipo</label><select class="form-select" id="type" name="type"><option value="">Todos</option><option th:each="item : ${types}" th:value="${item}" th:text="${item.label}" th:selected="${item == selectedType}">Persona</option></select></div><div class="col-md-3 col-lg-2"><label class="form-label" for="active">Estado</label><select class="form-select" id="active" name="active"><option value="">Todos</option><option value="true" th:selected="${selectedActive == true}">Activos</option><option value="false" th:selected="${selectedActive == false}">Inactivos</option></select></div><div class="col-md-3 col-lg-2" th:if="${canAssign}"><label class="form-label" for="assignedToId">Vendedor</label><select class="form-select" id="assignedToId" name="assignedToId"><option value="">Todos</option><option th:each="user : ${salesUsers}" th:value="${user.id}" th:text="${user.firstName + ' ' + user.lastName}" th:selected="${user.id == selectedAssignedToId}">Vendedor</option></select></div><div class="col-md-3 col-lg-2 d-flex gap-2"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i><span class="ms-1">Filtrar</span></button><a class="btn btn-outline-secondary" th:href="@{/clients}" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a></div></div></form><div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Cliente / Razón social</th><th>Tipo</th><th>Documento</th><th>Contacto</th><th>Vendedor</th><th>Estado</th><th>Creado</th><th></th></tr></thead><tbody><tr th:each="client : ${clients.content}"><td><div th:text="${client.clientType.name() == 'COMPANY' ? client.companyName : client.firstName + (client.lastName != null ? ' ' + client.lastName : '')}">Cliente</div><small class="text-body-secondary" th:text="${client.companyName != null and client.clientType.name() == 'PERSON' ? client.companyName : ''}"></small></td><td th:text="${client.clientType.label}">Persona</td><td th:text="${client.documentNumber ?: '-'}">-</td><td><div th:text="${client.email ?: '-'}">-</div><small class="text-body-secondary" th:text="${client.phone ?: ''}"></small></td><td th:text="${client.assignedTo != null ? client.assignedTo.firstName + ' ' + client.assignedTo.lastName : 'Sin asignar'}">-</td><td><span class="badge" th:classappend="${client.active} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${client.active ? 'Activo' : 'Inactivo'}">Activo</span></td><td th:text="${#temporals.format(client.createdAt, 'dd/MM/yyyy')}">-</td><td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-primary" th:href="@{/clients/{id}(id=${client.id})}" title="Ver"><i class="bi bi-eye"></i></a> <a class="btn btn-sm btn-outline-secondary" th:href="@{/clients/{id}/edit(id=${client.id})}" title="Editar"><i class="bi bi-pencil"></i></a></td></tr><tr th:if="${clients.empty}"><td colspan="8" class="text-center text-body-secondary py-5" th:text="${q != null or selectedType != null or selectedActive != null or selectedAssignedToId != null ? 'No se encontraron clientes con los filtros seleccionados.' : 'No se encontraron clientes.'}">No se encontraron clientes.</td></tr></tbody></table></div></div><nav class="mt-3" th:if="${clients.totalPages > 1}" aria-label="Paginación de clientes"><ul class="pagination justify-content-center"><li class="page-item" th:classappend="${clients.first} ? ' disabled' : ''"><a class="page-link" th:href="@{/clients(page=${clients.number - 1},q=${q},type=${selectedType},active=${selectedActive},assignedToId=${selectedAssignedToId})}">Anterior</a></li><li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, clients.totalPages - 1)}" th:classappend="${pageNumber == clients.number} ? ' active' : ''"><a class="page-link" th:text="${pageNumber + 1}" th:href="@{/clients(page=${pageNumber},q=${q},type=${selectedType},active=${selectedActive},assignedToId=${selectedAssignedToId})}">1</a></li><li class="page-item" th:classappend="${clients.last} ? ' disabled' : ''"><a class="page-link" th:href="@{/clients(page=${clients.number + 1},q=${q},type=${selectedType},active=${selectedActive},assignedToId=${selectedAssignedToId})}">Siguiente</a></li></ul></nav></main>
+<!doctype html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: shell(~{::main})}"
+>
+  <main>
+    <div
+      th:if="${successMessage}"
+      class="alert alert-success"
+      th:text="${successMessage}"
+    ></div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-1">Clientes</h1>
+        <p class="text-body-secondary mb-0">
+          Personas y empresas con relación comercial.
+        </p>
+      </div>
+      <a class="btn btn-primary" th:href="@{/clients/new}"
+        ><i class="bi bi-plus-lg me-1"></i>Nuevo Cliente</a
+      >
+    </div>
+    <form class="card card-body mb-4" method="get" th:action="@{/clients}">
+      <div class="row g-2 align-items-end">
+        <div class="col-lg-4">
+          <label class="form-label" for="q">Buscar</label
+          ><input
+            class="form-control"
+            id="q"
+            name="q"
+            th:value="${q}"
+            placeholder="Nombre, empresa, documento o email"
+          />
+        </div>
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label" for="type">Tipo</label
+          ><select class="form-select" id="type" name="type">
+            <option value="">Todos</option>
+            <option
+              th:each="item : ${types}"
+              th:value="${item}"
+              th:text="${item.label}"
+              th:selected="${item == selectedType}"
+            >
+              Persona
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label" for="active">Estado</label
+          ><select class="form-select" id="active" name="active">
+            <option value="">Todos</option>
+            <option value="true" th:selected="${selectedActive == true}">
+              Activos
+            </option>
+            <option value="false" th:selected="${selectedActive == false}">
+              Inactivos
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3 col-lg-2" th:if="${canAssign}">
+          <label class="form-label" for="assignedToId">Vendedor</label
+          ><select class="form-select" id="assignedToId" name="assignedToId">
+            <option value="">Todos</option>
+            <option
+              th:each="user : ${salesUsers}"
+              th:value="${user.id}"
+              th:text="${user.firstName + ' ' + user.lastName}"
+              th:selected="${user.id == selectedAssignedToId}"
+            >
+              Vendedor
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3 col-lg-2 d-flex gap-2">
+          <button class="btn btn-outline-primary" type="submit">
+            <i class="bi bi-search"></i
+            ><span class="ms-1">Filtrar</span></button
+          ><a
+            class="btn btn-outline-secondary"
+            th:href="@{/clients}"
+            title="Limpiar filtros"
+            ><i class="bi bi-x-lg"></i
+          ></a>
+        </div>
+      </div>
+    </form>
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Cliente / Razón social</th>
+              <th>Tipo</th>
+              <th>Documento</th>
+              <th>Contacto</th>
+              <th>Vendedor</th>
+              <th>Estado</th>
+              <th>Creado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="client : ${clients.content}">
+              <td>
+                <div
+                  th:text="${client.clientType.name() == 'COMPANY' ? client.companyName : client.firstName + (client.lastName != null ? ' ' + client.lastName : '')}"
+                >
+                  Cliente
+                </div>
+                <small
+                  class="text-body-secondary"
+                  th:text="${client.companyName != null and client.clientType.name() == 'PERSON' ? client.companyName : ''}"
+                ></small>
+              </td>
+              <td th:text="${client.clientType.label}">Persona</td>
+              <td th:text="${client.documentNumber ?: '-'}">-</td>
+              <td>
+                <div th:text="${client.email ?: '-'}">-</div>
+                <small
+                  class="text-body-secondary"
+                  th:text="${client.phone ?: ''}"
+                ></small>
+              </td>
+              <td
+                th:text="${client.assignedTo != null ? client.assignedTo.firstName + ' ' + client.assignedTo.lastName : 'Sin asignar'}"
+              >
+                -
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  th:classappend="${client.active} ? ' text-bg-success' : ' text-bg-secondary'"
+                  th:text="${client.active ? 'Activo' : 'Inactivo'}"
+                  >Activo</span
+                >
+              </td>
+              <td
+                th:text="${#temporals.format(client.createdAt, 'dd/MM/yyyy')}"
+              >
+                -
+              </td>
+              <td class="text-end text-nowrap">
+                <a
+                  class="btn btn-sm btn-outline-primary"
+                  th:href="@{/clients/{id}(id=${client.id})}"
+                  title="Ver"
+                  ><i class="bi bi-eye"></i
+                ></a>
+                <a
+                  class="btn btn-sm btn-outline-secondary"
+                  th:href="@{/clients/{id}/edit(id=${client.id})}"
+                  title="Editar"
+                  ><i class="bi bi-pencil"></i
+                ></a>
+              </td>
+            </tr>
+            <tr th:if="${clients.empty}">
+              <td
+                colspan="8"
+                class="text-center text-body-secondary py-5"
+                th:text="${q != null or selectedType != null or selectedActive != null or selectedAssignedToId != null ? 'No se encontraron clientes con los filtros seleccionados.' : 'No se encontraron clientes.'}"
+              >
+                No se encontraron clientes.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <nav
+      class="mt-3"
+      th:if="${clients.totalPages > 1}"
+      aria-label="Paginación de clientes"
+    >
+      <ul class="pagination justify-content-center">
+        <li
+          class="page-item"
+          th:classappend="${clients.first} ? ' disabled' : ''"
+        >
+          <a
+            class="page-link"
+            th:href="@{/clients(page=${clients.number - 1},q=${q},type=${selectedType},active=${selectedActive},assignedToId=${selectedAssignedToId})}"
+            >Anterior</a
+          >
+        </li>
+        <li
+          class="page-item"
+          th:each="pageNumber : ${#numbers.sequence(0, clients.totalPages - 1)}"
+          th:classappend="${pageNumber == clients.number} ? ' active' : ''"
+        >
+          <a
+            class="page-link"
+            th:text="${pageNumber + 1}"
+            th:href="@{/clients(page=${pageNumber},q=${q},type=${selectedType},active=${selectedActive},assignedToId=${selectedAssignedToId})}"
+            >1</a
+          >
+        </li>
+        <li
+          class="page-item"
+          th:classappend="${clients.last} ? ' disabled' : ''"
+        >
+          <a
+            class="page-link"
+            th:href="@{/clients(page=${clients.number + 1},q=${q},type=${selectedType},active=${selectedActive},assignedToId=${selectedAssignedToId})}"
+            >Siguiente</a
+          >
+        </li>
+      </ul>
+    </nav>
+  </main>
 </html>

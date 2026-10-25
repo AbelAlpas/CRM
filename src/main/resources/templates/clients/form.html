@@ -1,4 +1,161 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
-<main><div class="row justify-content-center"><div class="col-xl-9"><div class="card"><div class="card-body"><h1 class="h4 mb-4" th:text="${editing} ? 'Editar Cliente' : 'Nuevo Cliente'">Cliente</h1><form method="post" th:object="${clientForm}" th:action="${editing} ? @{/clients/{id}/edit(id=${clientId})} : @{/clients}"><div class="row g-3"><div class="col-12"><label class="form-label d-block">Tipo de cliente</label><div class="form-check form-check-inline" th:each="item : ${types}"><input class="form-check-input" type="radio" th:field="*{clientType}" th:value="${item}" th:id="${'type-' + item}"><label class="form-check-label" th:for="${'type-' + item}" th:text="${item.label}">Persona</label></div><div class="text-danger small" th:errors="*{clientType}"></div></div><div class="col-md-6"><label class="form-label" for="firstName">Nombres</label><input class="form-control" id="firstName" th:field="*{firstName}"><div class="text-danger small" th:errors="*{firstName}"></div></div><div class="col-md-6"><label class="form-label" for="lastName">Apellidos</label><input class="form-control" id="lastName" th:field="*{lastName}"><div class="text-danger small" th:errors="*{lastName}"></div></div><div class="col-md-6"><label class="form-label" for="companyName">Empresa</label><input class="form-control" id="companyName" th:field="*{companyName}"><div class="text-danger small" th:errors="*{companyName}"></div></div><div class="col-md-6"><label class="form-label" for="documentNumber">Documento</label><input class="form-control" id="documentNumber" th:field="*{documentNumber}"><div class="text-danger small" th:errors="*{documentNumber}"></div></div><div class="col-md-6"><label class="form-label" for="email">Email</label><input class="form-control" id="email" type="email" th:field="*{email}"><div class="text-danger small" th:errors="*{email}"></div></div><div class="col-md-6"><label class="form-label" for="phone">Teléfono</label><input class="form-control" id="phone" th:field="*{phone}"><div class="text-danger small" th:errors="*{phone}"></div></div><div class="col-12"><label class="form-label" for="address">Dirección</label><input class="form-control" id="address" th:field="*{address}"><div class="text-danger small" th:errors="*{address}"></div></div><div class="col-md-6" th:if="${canAssign}"><label class="form-label" for="assignedToId">Vendedor asignado</label><select class="form-select" id="assignedToId" th:field="*{assignedToId}"><option value="">Sin asignar</option><option th:each="user : ${salesUsers}" th:value="${user.id}" th:text="${user.firstName + ' ' + user.lastName}">Vendedor</option></select></div><div class="col-md-6" th:if="${editing}"><div class="form-check mt-4"><input class="form-check-input" id="active" type="checkbox" th:field="*{active}"><label class="form-check-label" for="active">Cliente activo</label></div></div></div><div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-outline-secondary" th:href="${editing} ? @{/clients/{id}(id=${clientId})} : @{/clients}">Cancelar</a><button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Guardar Cliente</button></div></form></div></div></div></div></main>
+<!doctype html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: shell(~{::main})}"
+>
+  <main>
+    <div class="row justify-content-center">
+      <div class="col-xl-9">
+        <div class="card">
+          <div class="card-body">
+            <h1
+              class="h4 mb-4"
+              th:text="${editing} ? 'Editar Cliente' : 'Nuevo Cliente'"
+            >
+              Cliente
+            </h1>
+            <form
+              method="post"
+              th:object="${clientForm}"
+              th:action="${editing} ? @{/clients/{id}/edit(id=${clientId})} : @{/clients}"
+            >
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label d-block">Tipo de cliente</label>
+                  <div
+                    class="form-check form-check-inline"
+                    th:each="item : ${types}"
+                  >
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      th:field="*{clientType}"
+                      th:value="${item}"
+                      th:id="${'type-' + item}"
+                    /><label
+                      class="form-check-label"
+                      th:for="${'type-' + item}"
+                      th:text="${item.label}"
+                      >Persona</label
+                    >
+                  </div>
+                  <div
+                    class="text-danger small"
+                    th:errors="*{clientType}"
+                  ></div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="firstName">Nombres</label
+                  ><input
+                    class="form-control"
+                    id="firstName"
+                    th:field="*{firstName}"
+                  />
+                  <div class="text-danger small" th:errors="*{firstName}"></div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="lastName">Apellidos</label
+                  ><input
+                    class="form-control"
+                    id="lastName"
+                    th:field="*{lastName}"
+                  />
+                  <div class="text-danger small" th:errors="*{lastName}"></div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="companyName">Empresa</label
+                  ><input
+                    class="form-control"
+                    id="companyName"
+                    th:field="*{companyName}"
+                  />
+                  <div
+                    class="text-danger small"
+                    th:errors="*{companyName}"
+                  ></div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="documentNumber"
+                    >Documento</label
+                  ><input
+                    class="form-control"
+                    id="documentNumber"
+                    th:field="*{documentNumber}"
+                  />
+                  <div
+                    class="text-danger small"
+                    th:errors="*{documentNumber}"
+                  ></div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="email">Email</label
+                  ><input
+                    class="form-control"
+                    id="email"
+                    type="email"
+                    th:field="*{email}"
+                  />
+                  <div class="text-danger small" th:errors="*{email}"></div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="phone">Teléfono</label
+                  ><input class="form-control" id="phone" th:field="*{phone}" />
+                  <div class="text-danger small" th:errors="*{phone}"></div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="address">Dirección</label
+                  ><input
+                    class="form-control"
+                    id="address"
+                    th:field="*{address}"
+                  />
+                  <div class="text-danger small" th:errors="*{address}"></div>
+                </div>
+                <div class="col-md-6" th:if="${canAssign}">
+                  <label class="form-label" for="assignedToId"
+                    >Vendedor asignado</label
+                  ><select
+                    class="form-select"
+                    id="assignedToId"
+                    th:field="*{assignedToId}"
+                  >
+                    <option value="">Sin asignar</option>
+                    <option
+                      th:each="user : ${salesUsers}"
+                      th:value="${user.id}"
+                      th:text="${user.firstName + ' ' + user.lastName}"
+                    >
+                      Vendedor
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-6" th:if="${editing}">
+                  <div class="form-check mt-4">
+                    <input
+                      class="form-check-input"
+                      id="active"
+                      type="checkbox"
+                      th:field="*{active}"
+                    /><label class="form-check-label" for="active"
+                      >Cliente activo</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end gap-2 mt-4">
+                <a
+                  class="btn btn-outline-secondary"
+                  th:href="${editing} ? @{/clients/{id}(id=${clientId})} : @{/clients}"
+                  >Cancelar</a
+                ><button class="btn btn-primary" type="submit">
+                  <i class="bi bi-check-lg me-1"></i>Guardar Cliente
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 </html>
