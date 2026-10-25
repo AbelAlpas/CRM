@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
+<main>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="h3 mb-1">Pipeline de ventas</h1><p class="text-body-secondary mb-0">Oportunidades abiertas organizadas por etapa.</p></div>
+    <div class="d-flex flex-wrap gap-2"><a class="btn btn-outline-success" th:href="@{/opportunities(status='WON')}">Ver ganadas</a><a class="btn btn-outline-danger" th:href="@{/opportunities(status='LOST')}">Ver perdidas</a><a class="btn btn-primary" th:href="@{/opportunities/new}"><i class="bi bi-plus-lg me-1"></i>Nueva oportunidad</a></div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4"><div class="card h-100"><div class="card-body"><p class="text-body-secondary mb-1">Total oportunidades</p><p class="h3 mb-0" th:text="${pipeline.totalCount}">0</p></div></div></div>
+    <div class="col-sm-4"><div class="card h-100"><div class="card-body"><p class="text-body-secondary mb-1">Valor total</p><p class="h3 mb-0" th:text="${'S/ ' + #numbers.formatDecimal(pipeline.totalAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</p></div></div></div>
+    <div class="col-sm-4"><div class="card h-100"><div class="card-body"><p class="text-body-secondary mb-1">Valor ponderado</p><p class="h3 mb-0" th:text="${'S/ ' + #numbers.formatDecimal(pipeline.weightedAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</p></div></div></div>
+  </div>
+
+  <form class="card card-body mb-4" method="get" th:action="@{/pipeline}"><div class="row g-2 align-items-end">
+    <div class="col-lg-5"><label class="form-label" for="search">Buscar</label><input class="form-control" id="search" name="search" th:value="${search}" placeholder="Oportunidad, cliente o documento"></div>
+    <div class="col-md-4 col-lg-3" th:if="${canAssign}"><label class="form-label" for="ownerId">Vendedor</label><select class="form-select" id="ownerId" name="ownerId"><option value="">Todos</option><option th:each="owner : ${owners}" th:value="${owner.id}" th:text="${owner.firstName + ' ' + owner.lastName}" th:selected="${owner.id == selectedOwnerId}">Vendedor</option></select></div>
+    <div class="col-md-4 col-lg-3"><label class="form-label" for="clientId">Cliente</label><select class="form-select" id="clientId" name="clientId"><option value="">Todos</option><option th:each="client : ${clients}" th:value="${client.id}" th:text="${client.clientType.name() == 'COMPANY' ? client.companyName : client.firstName + (client.lastName != null ? ' ' + client.lastName : '')}" th:selected="${client.id == selectedClientId}">Cliente</option></select></div>
+    <div class="col-md-4 col-lg-1 d-flex gap-2"><button class="btn btn-outline-primary" type="submit" title="Aplicar filtros"><i class="bi bi-search"></i></button><a class="btn btn-outline-secondary" th:href="@{/pipeline}" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a></div>
+  </div></form>
+
+  <div id="pipeline-feedback" class="alert alert-danger d-none" role="alert"></div>
+  <div th:if="${pipeline.totalCount == 0}" class="alert alert-light border d-flex flex-wrap justify-content-between align-items-center gap-2"><span>No hay oportunidades activas en el pipeline.</span><a class="btn btn-sm btn-primary" th:href="@{/opportunities/new}">Crear oportunidad</a></div>
+
+  <div id="pipeline-board" class="pipeline-board" th:attr="data-csrf-token=${_csrf.token},data-csrf-header=${_csrf.headerName},data-move-base=@{/pipeline/opportunities}">
+    <section class="pipeline-column" th:each="column : ${pipeline.stages}" th:attr="data-stage-code=${column.code}">
+      <header class="pipeline-column-header">
+        <div class="d-flex justify-content-between align-items-start gap-2"><h2 class="h6 mb-0 text-uppercase" th:text="${column.name}">Prospección</h2><span class="badge text-bg-secondary" th:text="${column.count}">0</span></div>
+        <p class="small text-body-secondary mb-0 mt-2" th:text="${'S/ ' + #numbers.formatDecimal(column.totalAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</p>
+      </header>
+      <div class="pipeline-dropzone" th:attr="data-stage-code=${column.code}">
+        <article class="card pipeline-card" draggable="true" th:each="card : ${column.opportunities}" th:attr="data-opportunity-id=${card.id},data-current-stage=${card.stageCode}">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2"><a class="fw-semibold text-decoration-none" th:href="@{/opportunities/{id}(id=${card.id})}" th:text="${card.name}">Oportunidad</a><span class="badge text-bg-warning" th:if="${card.overdue}">Vencida</span></div>
+            <p class="small text-body-secondary mb-3" th:text="${card.clientName}">Cliente</p>
+            <p class="fw-semibold mb-1" th:text="${'S/ ' + #numbers.formatDecimal(card.amount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</p>
+            <div class="progress mb-2" role="progressbar" th:attr="aria-valuenow=${card.probability}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" th:style="${'width: ' + card.probability + '%'}" th:text="${card.probability + '%'}">0%</div></div>
+            <p class="small mb-1"><i class="bi bi-person me-1"></i><span th:text="${card.ownerName}">Vendedor</span></p>
+            <p class="small mb-3" th:classappend="${card.overdue} ? ' text-danger' : ' text-body-secondary'"><i class="bi bi-calendar-event me-1"></i><span th:text="${card.expectedCloseDate != null ? #temporals.format(card.expectedCloseDate, 'dd/MM/yyyy') : 'Sin fecha estimada'}">Sin fecha</span></p>
+            <div class="d-flex gap-2 mb-2"><a class="btn btn-sm btn-outline-primary flex-fill" th:href="@{/opportunities/{id}(id=${card.id})}">Ver</a><a class="btn btn-sm btn-outline-danger" th:href="@{/opportunities/{id}/lose(id=${card.id})}" title="Marcar como perdida"><i class="bi bi-x-circle"></i></a></div>
+            <form method="post" th:action="@{/opportunities/{id}/stage(id=${card.id})}" class="d-flex gap-2"><label class="visually-hidden" th:for="${'stage-' + card.id}">Cambiar etapa</label><select class="form-select form-select-sm" name="targetStageCode" th:id="${'stage-' + card.id}"><option th:each="target : ${pipeline.stages}" th:value="${target.code}" th:text="${target.name}" th:selected="${target.code == card.stageCode}">Etapa</option></select><button class="btn btn-sm btn-outline-secondary" type="submit" title="Actualizar etapa"><i class="bi bi-arrow-right"></i></button></form>
+          </div>
+        </article>
+        <p class="pipeline-empty small text-body-secondary text-center py-4 mb-0" th:if="${column.count == 0}">Sin oportunidades</p>
+      </div>
+    </section>
+  </div>
+  <script th:src="@{/js/pipeline.js}" defer></script>
+</main>
+</html>

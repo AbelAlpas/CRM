@@ -10,7 +10,7 @@
         <a class="nav-link text-white" th:classappend="${activeModule == 'leads'} ? ' active bg-primary' : ''" th:href="@{/leads}"><i class="bi bi-person-lines-fill me-2"></i>Leads</a>
         <a class="nav-link text-white" th:classappend="${activeModule == 'clients'} ? ' active bg-primary' : ''" th:href="@{/clients}"><i class="bi bi-people me-2"></i>Clientes</a>
         <a class="nav-link text-white" th:classappend="${activeModule == 'opportunities'} ? ' active bg-primary' : ''" th:href="@{/opportunities}"><i class="bi bi-briefcase me-2"></i>Oportunidades</a>
-        <a class="nav-link text-white-50 disabled" href="#" aria-disabled="true"><i class="bi bi-kanban me-2"></i>Pipeline</a>
+        <a class="nav-link text-white" th:classappend="${activeModule == 'pipeline'} ? ' active bg-primary' : ''" th:href="@{/pipeline}"><i class="bi bi-kanban me-2"></i>Pipeline</a>
         <a class="nav-link text-white-50 disabled" href="#" aria-disabled="true"><i class="bi bi-calendar-event me-2"></i>Actividades</a>
         <a class="nav-link text-white" th:classappend="${activeModule == 'users'} ? ' active bg-primary' : ''" th:href="@{/users}"><i class="bi bi-person-gear me-2"></i>Usuarios</a>
     </nav>

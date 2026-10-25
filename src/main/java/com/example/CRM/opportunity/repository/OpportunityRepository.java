@@ -22,6 +22,27 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     @EntityGraph(attributePaths = {"client", "owner", "stage"})
     @Query("""
         select o from Opportunity o
+        where o.status = com.example.CRM.opportunity.entity.OpportunityStatus.OPEN
+          and o.stage.active = true
+          and o.stage.closed = false
+          and (coalesce(:term, '') = '' or lower(o.name) like lower(concat('%', :term, '%'))
+            or lower(o.client.firstName) like lower(concat('%', :term, '%'))
+            or lower(o.client.lastName) like lower(concat('%', :term, '%'))
+            or lower(o.client.companyName) like lower(concat('%', :term, '%'))
+            or lower(o.client.documentNumber) like lower(concat('%', :term, '%')))
+          and (:ownerId is null or o.owner.id = :ownerId)
+          and (:clientId is null or o.client.id = :clientId)
+        order by case when o.expectedCloseDate is null then 1 else 0 end,
+                 o.expectedCloseDate asc,
+                 o.createdAt asc
+        """)
+    List<Opportunity> findOpenForPipeline(@Param("term") String term,
+                                          @Param("ownerId") Long ownerId,
+                                          @Param("clientId") Long clientId);
+
+    @EntityGraph(attributePaths = {"client", "owner", "stage"})
+    @Query("""
+        select o from Opportunity o
         where (coalesce(:term, '') = '' or lower(o.name) like lower(concat('%', :term, '%'))
             or lower(o.client.firstName) like lower(concat('%', :term, '%'))
             or lower(o.client.lastName) like lower(concat('%', :term, '%'))

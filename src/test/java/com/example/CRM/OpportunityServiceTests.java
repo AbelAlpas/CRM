@@ -218,6 +218,51 @@ class OpportunityServiceTests {
             .isInstanceOf(AccessDeniedException.class);
     }
 
+    @Test
+    void salesPipelineAlwaysUsesAuthenticatedSellerAsOwner() {
+        User authenticatedSeller = mock(User.class);
+        when(authenticatedSeller.getId()).thenReturn(77L);
+        when(users.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(authenticatedSeller));
+        Authentication authentication = new TestingAuthenticationToken(
+            "seller@example.com", "", "ROLE_SALES");
+        when(opportunities.findOpenForPipeline("cemento", 77L, 15L)).thenReturn(java.util.List.of());
+
+        service.findOpenForPipeline(" cemento ", 999L, 15L, authentication);
+
+        verify(opportunities).findOpenForPipeline("cemento", 77L, 15L);
+    }
+
+    @Test
+    void managerPipelineKeepsRequestedOwnerFilter() {
+        Authentication authentication = new TestingAuthenticationToken(
+            admin.getEmail(), "", "ROLE_MANAGER");
+        when(opportunities.findOpenForPipeline(null, 44L, null)).thenReturn(java.util.List.of());
+
+        service.findOpenForPipeline(null, 44L, null, authentication);
+
+        verify(opportunities).findOpenForPipeline(null, 44L, null);
+    }
+
+    @Test
+    void adminPipelineCanRequestAllOpenOpportunities() {
+        when(opportunities.findOpenForPipeline(null, null, null)).thenReturn(java.util.List.of());
+
+        service.findOpenForPipeline(null, null, null, adminAuth);
+
+        verify(opportunities).findOpenForPipeline(null, null, null);
+    }
+
+    @Test
+    void managerPipelineCanRequestAllOpenOpportunities() {
+        Authentication authentication = new TestingAuthenticationToken(
+            admin.getEmail(), "", "ROLE_MANAGER");
+        when(opportunities.findOpenForPipeline(null, null, null)).thenReturn(java.util.List.of());
+
+        service.findOpenForPipeline(null, null, null, authentication);
+
+        verify(opportunities).findOpenForPipeline(null, null, null);
+    }
+
     private OpportunityCreateRequest createRequest(Long clientId, Long ownerId) {
         OpportunityCreateRequest request = new OpportunityCreateRequest();
         request.setClientId(clientId);

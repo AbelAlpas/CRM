@@ -16,7 +16,6 @@ import com.example.CRM.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,7 +28,6 @@ public class OpportunityService {
     private static final String PROSPECTING = "PROSPECTING";
     private static final String WON = "WON";
     private static final String LOST = "LOST";
-    private static final Set<String> OPEN_STAGE_CODES = Set.of("PROSPECTING", "QUALIFICATION", "PROPOSAL", "NEGOTIATION");
 
     private final OpportunityRepository opportunities;
     private final PipelineStageRepository stages;
@@ -86,9 +84,15 @@ public class OpportunityService {
 
     @Transactional(readOnly = true)
     public List<PipelineStage> openStages() {
-        return stages.findAllByActiveTrueAndClosedFalseOrderByDisplayOrderAsc().stream()
-            .filter(stage -> OPEN_STAGE_CODES.contains(stage.getCode()))
-            .toList();
+        return stages.findAllByActiveTrueAndClosedFalseOrderByDisplayOrderAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Opportunity> findOpenForPipeline(String term, Long ownerId, Long clientId,
+                                                  Authentication authentication) {
+        User current = currentUser(authentication);
+        Long effectiveOwner = isSales(authentication) ? current.getId() : ownerId;
+        return opportunities.findOpenForPipeline(normalize(term), effectiveOwner, clientId);
     }
 
     @Transactional(readOnly = true)
@@ -137,7 +141,7 @@ public class OpportunityService {
     public Opportunity changeStage(Long id, String targetStageCode, Authentication authentication) {
         Opportunity opportunity = findForChange(id, authentication);
         String normalizedCode = normalizeCode(targetStageCode);
-        if (!OPEN_STAGE_CODES.contains(normalizedCode)) {
+        if (WON.equals(normalizedCode) || LOST.equals(normalizedCode)) {
             throw new IllegalArgumentException("La etapa seleccionada no es una etapa comercial abierta");
         }
         PipelineStage target = requireStage(normalizedCode);
