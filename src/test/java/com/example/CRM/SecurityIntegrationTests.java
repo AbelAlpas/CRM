@@ -12,6 +12,9 @@ import com.example.CRM.user.repository.UserRepository;
 import com.example.CRM.user.service.UserService;
 import com.example.CRM.lead.repository.LeadRepository;
 import com.example.CRM.client.repository.ClientRepository;
+import com.example.CRM.opportunity.repository.OpportunityRepository;
+import com.example.CRM.opportunity.repository.OpportunityStageHistoryRepository;
+import com.example.CRM.opportunity.repository.PipelineStageRepository;
 import com.example.CRM.security.service.DatabaseUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,9 @@ class SecurityIntegrationTests {
     @MockBean UserService userService;
     @MockBean LeadRepository leadRepository;
     @MockBean ClientRepository clientRepository;
+    @MockBean OpportunityRepository opportunityRepository;
+    @MockBean OpportunityStageHistoryRepository opportunityStageHistoryRepository;
+    @MockBean PipelineStageRepository pipelineStageRepository;
     @MockBean DatabaseUserDetailsService databaseUserDetailsService;
     @Autowired PasswordEncoder passwordEncoder;
 
@@ -42,6 +48,7 @@ class SecurityIntegrationTests {
     }
 
     @Test void unauthenticatedUserIsRedirectedToLogin() throws Exception { mvc.perform(get("/dashboard")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("http://localhost/login")); }
+    @Test void unauthenticatedUserCannotAccessOpportunities() throws Exception { mvc.perform(get("/opportunities")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("http://localhost/login")); }
     @Test void correctLoginFormIsAccepted() throws Exception { mvc.perform(post("/login").with(csrf()).param("username", "user@example.com").param("password", "secret123")).andExpect(status().is3xxRedirection()); }
     @Test void incorrectLoginFormIsRejected() throws Exception { mvc.perform(post("/login").with(csrf()).param("username", "user@example.com").param("password", "bad")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login?error")); }
     @Test @WithMockUser(roles = "ADMIN") void adminCanAccessUsers() throws Exception { mvc.perform(get("/users")).andExpect(status().isOk()); }

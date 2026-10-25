@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
+<main><div class="row justify-content-center"><div class="col-lg-7"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-2">Marcar oportunidad como perdida</h1><p class="text-body-secondary" th:text="${opportunity.name}">Oportunidad</p>
+  <div class="alert alert-warning"><strong>Cliente:</strong> <span th:text="${opportunity.client.clientType.name() == 'COMPANY' ? opportunity.client.companyName : opportunity.client.firstName + (opportunity.client.lastName != null ? ' ' + opportunity.client.lastName : '')}">Cliente</span><br><strong>Monto:</strong> <span th:text="${'S/ ' + #numbers.formatDecimal(opportunity.amount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</span></div>
+  <form method="post" th:action="@{/opportunities/{id}/lose(id=${opportunity.id})}" th:object="${opportunityLostRequest}"><label class="form-label" for="lostReason">Motivo de pérdida</label><textarea class="form-control" id="lostReason" rows="5" maxlength="1000" th:field="*{lostReason}" required></textarea><div class="text-danger small" th:errors="*{lostReason}"></div><div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-outline-secondary" th:href="@{/opportunities/{id}(id=${opportunity.id})}">Cancelar</a><button class="btn btn-danger" type="submit">Confirmar pérdida</button></div></form>
+</div></div></div></div></main>
+</html>

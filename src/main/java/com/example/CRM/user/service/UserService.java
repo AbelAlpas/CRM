@@ -25,6 +25,9 @@ public class UserService {
     public List<User> findAll() { return users.findAll(); }
 
     @Transactional(readOnly = true)
+    public List<User> findAllEnabled() { return users.findAllByEnabledTrueOrderByFirstNameAscLastNameAsc(); }
+
+    @Transactional(readOnly = true)
     public User findById(Long id) { return users.findById(id).orElseThrow(); }
 
     @Transactional

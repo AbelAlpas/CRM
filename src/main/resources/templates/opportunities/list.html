@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
+<main>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="h3 mb-1">Oportunidades</h1><p class="text-body-secondary mb-0">Ventas potenciales y avance comercial.</p></div>
+    <a class="btn btn-primary" th:href="@{/opportunities/new}"><i class="bi bi-plus-lg me-1"></i>Nueva oportunidad</a>
+  </div>
+
+  <form class="card card-body mb-4" method="get" th:action="@{/opportunities}">
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-4"><label class="form-label" for="q">Buscar</label><input class="form-control" id="q" name="q" th:value="${q}" placeholder="Oportunidad, cliente o documento"></div>
+      <div class="col-md-3 col-lg-2"><label class="form-label" for="status">Estado</label><select class="form-select" id="status" name="status"><option value="">Todos</option><option th:each="item : ${statuses}" th:value="${item}" th:text="${item.label}" th:selected="${item == selectedStatus}">Abierta</option></select></div>
+      <div class="col-md-3 col-lg-2"><label class="form-label" for="stageId">Etapa</label><select class="form-select" id="stageId" name="stageId"><option value="">Todas</option><option th:each="item : ${stages}" th:value="${item.id}" th:text="${item.name}" th:selected="${item.id == selectedStageId}">Prospección</option></select></div>
+      <div class="col-md-3 col-lg-2" th:if="${canAssign}"><label class="form-label" for="ownerId">Vendedor</label><select class="form-select" id="ownerId" name="ownerId"><option value="">Todos</option><option th:each="item : ${owners}" th:value="${item.id}" th:text="${item.firstName + ' ' + item.lastName}" th:selected="${item.id == selectedOwnerId}">Vendedor</option></select></div>
+      <div class="col-md-3 col-lg-2"><label class="form-label" for="expectedCloseDate">Cierre esperado</label><input class="form-control" type="date" id="expectedCloseDate" name="expectedCloseDate" th:value="${selectedExpectedCloseDate}"></div>
+      <div class="col-md-3 col-lg-2 d-flex gap-2"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i><span class="ms-1">Filtrar</span></button><a class="btn btn-outline-secondary" th:href="@{/opportunities}" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a></div>
+    </div>
+  </form>
+
+  <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Oportunidad</th><th>Cliente</th><th>Monto</th><th>Etapa</th><th>Probabilidad</th><th>Vendedor</th><th>Cierre esperado</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      <tr th:each="opportunity : ${opportunities.content}">
+        <td class="fw-semibold" th:text="${opportunity.name}">Venta</td>
+        <td th:text="${opportunity.client.clientType.name() == 'COMPANY' ? opportunity.client.companyName : opportunity.client.firstName + (opportunity.client.lastName != null ? ' ' + opportunity.client.lastName : '')}">Cliente</td>
+        <td class="text-nowrap" th:text="${'S/ ' + #numbers.formatDecimal(opportunity.amount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</td>
+        <td th:text="${opportunity.stage.name}">Prospección</td>
+        <td th:text="${opportunity.probability + '%'}">0%</td>
+        <td th:text="${opportunity.owner != null ? opportunity.owner.firstName + ' ' + opportunity.owner.lastName : '-'}">Vendedor</td>
+        <td th:text="${opportunity.expectedCloseDate != null ? #temporals.format(opportunity.expectedCloseDate, 'dd/MM/yyyy') : '-'}">-</td>
+        <td><span class="badge" th:classappend="${opportunity.status.name() == 'WON' ? ' text-bg-success' : opportunity.status.name() == 'LOST' ? ' text-bg-danger' : ' text-bg-primary'}" th:text="${opportunity.status.label}">Abierta</span></td>
+        <td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-primary" th:href="@{/opportunities/{id}(id=${opportunity.id})}" title="Ver"><i class="bi bi-eye"></i></a> <a class="btn btn-sm btn-outline-secondary" th:if="${opportunity.open}" th:href="@{/opportunities/{id}/edit(id=${opportunity.id})}" title="Editar"><i class="bi bi-pencil"></i></a></td>
+      </tr>
+      <tr th:if="${opportunities.empty}"><td colspan="9" class="text-center text-body-secondary py-5" th:text="${q != null or selectedStatus != null or selectedStageId != null or selectedOwnerId != null or selectedClientId != null or selectedExpectedCloseDate != null ? 'No se encontraron oportunidades con los filtros seleccionados.' : 'No se encontraron oportunidades.'}">No se encontraron oportunidades.</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <nav class="mt-3" th:if="${opportunities.totalPages > 1}" aria-label="Paginación de oportunidades"><ul class="pagination justify-content-center">
+    <li class="page-item" th:classappend="${opportunities.first} ? ' disabled' : ''"><a class="page-link" th:href="@{/opportunities(page=${opportunities.number - 1},q=${q},status=${selectedStatus},stageId=${selectedStageId},ownerId=${selectedOwnerId},clientId=${selectedClientId},expectedCloseDate=${selectedExpectedCloseDate})}">Anterior</a></li>
+    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, opportunities.totalPages - 1)}" th:classappend="${pageNumber == opportunities.number} ? ' active' : ''"><a class="page-link" th:text="${pageNumber + 1}" th:href="@{/opportunities(page=${pageNumber},q=${q},status=${selectedStatus},stageId=${selectedStageId},ownerId=${selectedOwnerId},clientId=${selectedClientId},expectedCloseDate=${selectedExpectedCloseDate})}">1</a></li>
+    <li class="page-item" th:classappend="${opportunities.last} ? ' disabled' : ''"><a class="page-link" th:href="@{/opportunities(page=${opportunities.number + 1},q=${q},status=${selectedStatus},stageId=${selectedStageId},ownerId=${selectedOwnerId},clientId=${selectedClientId},expectedCloseDate=${selectedExpectedCloseDate})}">Siguiente</a></li>
+  </ul></nav>
+</main>
+</html>

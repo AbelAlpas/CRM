@@ -137,5 +137,9 @@
         </div>
       </div>
     </div>
+    <div class="mt-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><div><h2 class="h4 mb-1">Oportunidades</h2><p class="text-body-secondary mb-0">Historial comercial asociado a este cliente.</p></div><a class="btn btn-primary" th:if="${client.active}" th:href="@{/opportunities/new(clientId=${client.id})}"><i class="bi bi-plus-lg me-1"></i>Nueva oportunidad</a></div>
+      <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Nombre</th><th>Monto</th><th>Etapa</th><th>Estado</th><th></th></tr></thead><tbody><tr th:each="opportunity : ${opportunities}"><td th:text="${opportunity.name}">Oportunidad</td><td th:text="${'S/ ' + #numbers.formatDecimal(opportunity.amount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</td><td th:text="${opportunity.stage.name}">Prospección</td><td><span class="badge" th:classappend="${opportunity.status.name() == 'WON' ? ' text-bg-success' : opportunity.status.name() == 'LOST' ? ' text-bg-danger' : ' text-bg-primary'}" th:text="${opportunity.status.label}">Abierta</span></td><td class="text-end"><a class="btn btn-sm btn-outline-primary" th:href="@{/opportunities/{id}(id=${opportunity.id})}">Ver</a></td></tr><tr th:if="${#lists.isEmpty(opportunities)}"><td colspan="5" class="text-center text-body-secondary py-5"><span>Este cliente todavía no tiene oportunidades.</span><div class="mt-2" th:if="${client.active}"><a th:href="@{/opportunities/new(clientId=${client.id})}">Crear primera oportunidad</a></div></td></tr></tbody></table></div></div>
+    </div>
   </main>
 </html>

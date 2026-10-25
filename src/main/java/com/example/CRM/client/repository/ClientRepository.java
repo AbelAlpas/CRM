@@ -3,6 +3,7 @@ package com.example.CRM.client.repository;
 import com.example.CRM.client.entity.Client;
 import com.example.CRM.client.entity.ClientType;
 import java.util.Optional;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -18,6 +19,10 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Optional<Client> findWithRelationsById(Long id);
     @EntityGraph(attributePaths = {"assignedTo", "createdBy", "sourceLead"})
     Optional<Client> findBySourceLeadId(Long sourceLeadId);
+    @EntityGraph(attributePaths = {"assignedTo"})
+    List<Client> findAllByActiveTrueOrderByCompanyNameAscFirstNameAsc();
+    @EntityGraph(attributePaths = {"assignedTo"})
+    List<Client> findAllByActiveTrueAndAssignedToIdOrderByCompanyNameAscFirstNameAsc(Long assignedToId);
     @EntityGraph(attributePaths = {"assignedTo", "createdBy", "sourceLead"})
     @Query("""
         select c from Client c
