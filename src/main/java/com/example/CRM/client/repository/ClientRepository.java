@@ -2,6 +2,8 @@ package com.example.CRM.client.repository;
 
 import com.example.CRM.client.entity.Client;
 import com.example.CRM.client.entity.ClientType;
+import com.example.CRM.dashboard.model.DashboardReadModels.ClientAggregate;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -12,6 +14,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
+    @Query("""
+        select coalesce(sum(case when c.active = true then 1 else 0 end), 0) as activeCount,
+               coalesce(sum(case when (:allPeriod = true or c.createdAt >= :from) and c.createdAt < :to then 1 else 0 end), 0) as newInPeriod
+        from Client c
+        where (:assignedToId is null or c.assignedTo.id = :assignedToId)
+        """)
+    ClientAggregate dashboardMetrics(@Param("from") OffsetDateTime from,
+                                     @Param("to") OffsetDateTime to,
+                                     @Param("allPeriod") boolean allPeriod,
+                                     @Param("assignedToId") Long assignedToId);
+
     boolean existsByDocumentNumberIgnoreCase(String documentNumber);
     boolean existsByDocumentNumberIgnoreCaseAndIdNot(String documentNumber, Long id);
     boolean existsBySourceLeadId(Long sourceLeadId);

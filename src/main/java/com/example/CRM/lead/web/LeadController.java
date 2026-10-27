@@ -1,5 +1,6 @@
 package com.example.CRM.lead.web;
 
+import com.example.CRM.activity.service.ActivityService;
 import com.example.CRM.lead.entity.LeadSource;
 import com.example.CRM.lead.entity.LeadStatus;
 import com.example.CRM.lead.service.LeadService;
@@ -29,8 +30,9 @@ public class LeadController {
     private final LeadService leads;
     private final UserService users;
     private final ClientService clients;
+    private final ActivityService activities;
 
-    public LeadController(LeadService leads, UserService users, ClientService clients) { this.leads = leads; this.users = users; this.clients = clients; }
+    public LeadController(LeadService leads, UserService users, ClientService clients, ActivityService activities) { this.leads = leads; this.users = users; this.clients = clients; this.activities = activities; }
 
     @GetMapping
     public String list(@RequestParam(required = false) String q, @RequestParam(required = false) LeadStatus status,
@@ -51,7 +53,7 @@ public class LeadController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Authentication authentication, Model model) { var lead = leads.findById(id, authentication); model.addAttribute("pageTitle", "Detalle del Lead"); model.addAttribute("activeModule", "leads"); model.addAttribute("lead", lead); model.addAttribute("originClient", clients.findBySourceLeadId(id)); model.addAttribute("canConvert", lead.getStatus() == LeadStatus.QUALIFIED && canManage(authentication) || lead.getStatus() == LeadStatus.QUALIFIED && isAssignedSales(lead, authentication)); return "leads/detail"; }
+    public String detail(@PathVariable Long id, Authentication authentication, Model model) { var lead = leads.findById(id, authentication); model.addAttribute("pageTitle", "Detalle del Lead"); model.addAttribute("activeModule", "leads"); model.addAttribute("lead", lead); model.addAttribute("originClient", clients.findBySourceLeadId(id)); model.addAttribute("activities", activities.findByLead(id, authentication, 5)); model.addAttribute("activityCreateUrl", "/activities/new?leadId=" + id); model.addAttribute("canConvert", lead.getStatus() == LeadStatus.QUALIFIED && canManage(authentication) || lead.getStatus() == LeadStatus.QUALIFIED && isAssignedSales(lead, authentication)); return "leads/detail"; }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Authentication authentication, Model model) { var lead = leads.findById(id, authentication); addCommonModel(model); model.addAttribute("leadForm", toForm(lead)); model.addAttribute("leadId", id); model.addAttribute("editing", true); model.addAttribute("canAssign", canManage(authentication)); return "leads/form"; }

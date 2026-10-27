@@ -15,6 +15,7 @@ import com.example.CRM.client.repository.ClientRepository;
 import com.example.CRM.opportunity.repository.OpportunityRepository;
 import com.example.CRM.opportunity.repository.OpportunityStageHistoryRepository;
 import com.example.CRM.opportunity.repository.PipelineStageRepository;
+import com.example.CRM.activity.repository.ActivityRepository;
 import com.example.CRM.security.service.DatabaseUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ class SecurityIntegrationTests {
     @MockBean OpportunityRepository opportunityRepository;
     @MockBean OpportunityStageHistoryRepository opportunityStageHistoryRepository;
     @MockBean PipelineStageRepository pipelineStageRepository;
+    @MockBean ActivityRepository activityRepository;
     @MockBean DatabaseUserDetailsService databaseUserDetailsService;
     @Autowired PasswordEncoder passwordEncoder;
 

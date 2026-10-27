@@ -1,5 +1,6 @@
 package com.example.CRM.opportunity.web;
 
+import com.example.CRM.activity.service.ActivityService;
 import com.example.CRM.client.entity.Client;
 import com.example.CRM.opportunity.entity.Opportunity;
 import com.example.CRM.opportunity.entity.OpportunityStatus;
@@ -30,10 +31,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class OpportunityController {
     private final OpportunityService opportunities;
     private final UserService users;
+    private final ActivityService activities;
 
-    public OpportunityController(OpportunityService opportunities, UserService users) {
+    public OpportunityController(OpportunityService opportunities, UserService users, ActivityService activities) {
         this.opportunities = opportunities;
         this.users = users;
+        this.activities = activities;
     }
 
     @GetMapping
@@ -99,6 +102,8 @@ public class OpportunityController {
         model.addAttribute("opportunity", opportunity);
         model.addAttribute("openStages", opportunities.openStages());
         model.addAttribute("stageHistory", opportunities.getStageHistory(id, authentication));
+        model.addAttribute("activities", activities.findByOpportunity(id, authentication, 5));
+        model.addAttribute("activityCreateUrl", "/activities/new?opportunityId=" + id);
         return "opportunities/detail";
     }
 

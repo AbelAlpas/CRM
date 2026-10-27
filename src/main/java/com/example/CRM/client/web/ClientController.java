@@ -1,5 +1,6 @@
 package com.example.CRM.client.web;
 
+import com.example.CRM.activity.service.ActivityService;
 import com.example.CRM.client.entity.ClientType;
 import com.example.CRM.client.service.ClientService;
 import com.example.CRM.opportunity.service.OpportunityService;
@@ -27,7 +28,8 @@ public class ClientController {
     private final ClientService clients;
     private final com.example.CRM.user.service.UserService users;
     private final OpportunityService opportunities;
-    public ClientController(ClientService clients, com.example.CRM.user.service.UserService users, OpportunityService opportunities) { this.clients = clients; this.users = users; this.opportunities = opportunities; }
+    private final ActivityService activities;
+    public ClientController(ClientService clients, com.example.CRM.user.service.UserService users, OpportunityService opportunities, ActivityService activities) { this.clients = clients; this.users = users; this.opportunities = opportunities; this.activities = activities; }
 
     @GetMapping
     public String list(@RequestParam(required = false) String q, @RequestParam(required = false) ClientType type, @RequestParam(required = false) Boolean active, @RequestParam(required = false) Long assignedToId, @RequestParam(defaultValue = "0") int page, Authentication authentication, Model model) {
@@ -45,7 +47,7 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Authentication authentication, Model model) { var client = clients.findById(id, authentication); model.addAttribute("pageTitle", "Detalle del Cliente"); model.addAttribute("activeModule", "clients"); model.addAttribute("client", client); model.addAttribute("opportunities", opportunities.findByClient(id, authentication)); return "clients/detail"; }
+    public String detail(@PathVariable Long id, Authentication authentication, Model model) { var client = clients.findById(id, authentication); model.addAttribute("pageTitle", "Detalle del Cliente"); model.addAttribute("activeModule", "clients"); model.addAttribute("client", client); model.addAttribute("opportunities", opportunities.findByClient(id, authentication)); model.addAttribute("activities", activities.findByClient(id, authentication, 5)); model.addAttribute("activityCreateUrl", "/activities/new?clientId=" + id); return "clients/detail"; }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Authentication authentication, Model model) { var client = clients.findById(id, authentication); addCommon(model); model.addAttribute("clientForm", toForm(client)); model.addAttribute("clientId", id); model.addAttribute("editing", true); model.addAttribute("canAssign", canManage(authentication)); return "clients/form"; }

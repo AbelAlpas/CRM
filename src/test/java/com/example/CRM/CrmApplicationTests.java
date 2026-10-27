@@ -11,6 +11,7 @@ import com.example.CRM.client.repository.ClientRepository;
 import com.example.CRM.opportunity.repository.OpportunityRepository;
 import com.example.CRM.opportunity.repository.OpportunityStageHistoryRepository;
 import com.example.CRM.opportunity.repository.PipelineStageRepository;
+import com.example.CRM.activity.repository.ActivityRepository;
 
 @SpringBootTest
 class CrmApplicationTests {
@@ -22,6 +23,7 @@ class CrmApplicationTests {
 	@MockBean OpportunityRepository opportunityRepository;
 	@MockBean OpportunityStageHistoryRepository opportunityStageHistoryRepository;
 	@MockBean PipelineStageRepository pipelineStageRepository;
+	@MockBean ActivityRepository activityRepository;
 
 	@Test
 	void contextLoads() {

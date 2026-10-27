@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: shell(~{::main})}">
+<main>
+  <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="h3 mb-1">Actividades</h1><p class="text-body-secondary mb-0">Tareas, llamadas, reuniones y seguimientos comerciales.</p></div>
+    <a class="btn btn-primary" th:href="@{/activities/new}"><i class="bi bi-plus-lg me-1"></i>Nueva actividad</a>
+  </div>
+
+  <div class="btn-group mb-3" role="group" aria-label="Vista de actividades">
+    <a class="btn btn-outline-secondary" th:each="scope : ${scopes}" th:classappend="${scope == selectedScope} ? ' active' : ''" th:href="@{/activities(scope=${scope},q=${q},type=${selectedType},status=${selectedStatus},priority=${selectedPriority},ownerId=${selectedOwnerId},leadId=${selectedLeadId},clientId=${selectedClientId},opportunityId=${selectedOpportunityId})}" th:text="${scope.label}">Todas</a>
+  </div>
+
+  <form class="card card-body mb-4" method="get" th:action="@{/activities}">
+    <input type="hidden" name="scope" th:value="${selectedScope}">
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-4"><label class="form-label" for="q">Buscar</label><input class="form-control" id="q" name="q" th:value="${q}" placeholder="Asunto, descripcion o relacionado"></div>
+      <div class="col-md-4 col-lg-2"><label class="form-label" for="type">Tipo</label><select class="form-select" id="type" name="type"><option value="">Todos</option><option th:each="item : ${types}" th:value="${item}" th:text="${item.label}" th:selected="${item == selectedType}">Tarea</option></select></div>
+      <div class="col-md-4 col-lg-2"><label class="form-label" for="status">Estado</label><select class="form-select" id="status" name="status"><option value="">Todos</option><option th:each="item : ${statuses}" th:value="${item}" th:text="${item.label}" th:selected="${item == selectedStatus}">Pendiente</option></select></div>
+      <div class="col-md-4 col-lg-2"><label class="form-label" for="priority">Prioridad</label><select class="form-select" id="priority" name="priority"><option value="">Todas</option><option th:each="item : ${priorities}" th:value="${item}" th:text="${item.label}" th:selected="${item == selectedPriority}">Media</option></select></div>
+      <div class="col-md-4 col-lg-2" th:if="${canAssign}"><label class="form-label" for="ownerId">Responsable</label><select class="form-select" id="ownerId" name="ownerId"><option value="">Todos</option><option th:each="owner : ${owners}" th:value="${owner.id}" th:text="${owner.firstName + ' ' + owner.lastName}" th:selected="${owner.id == selectedOwnerId}">Responsable</option></select></div>
+      <div class="col-md-4"><label class="form-label" for="leadId">Lead</label><select class="form-select" id="leadId" name="leadId"><option value="">Todos</option><option th:each="lead : ${leads}" th:value="${lead.id}" th:text="${lead.firstName + (lead.lastName != null ? ' ' + lead.lastName : '') + (lead.companyName != null ? ' - ' + lead.companyName : '')}" th:selected="${lead.id == selectedLeadId}">Lead</option></select></div>
+      <div class="col-md-4"><label class="form-label" for="clientId">Cliente</label><select class="form-select" id="clientId" name="clientId"><option value="">Todos</option><option th:each="client : ${clients}" th:value="${client.id}" th:text="${client.clientType.name() == 'COMPANY' ? client.companyName : client.firstName + (client.lastName != null ? ' ' + client.lastName : '')}" th:selected="${client.id == selectedClientId}">Cliente</option></select></div>
+      <div class="col-md-4"><label class="form-label" for="opportunityId">Oportunidad</label><select class="form-select" id="opportunityId" name="opportunityId"><option value="">Todas</option><option th:each="opportunity : ${opportunities}" th:value="${opportunity.id}" th:text="${opportunity.name}" th:selected="${opportunity.id == selectedOpportunityId}">Oportunidad</option></select></div>
+      <div class="col-12 d-flex gap-2 justify-content-end"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-search me-1"></i>Filtrar</button><a class="btn btn-outline-secondary" th:href="@{/activities}" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a></div>
+    </div>
+  </form>
+
+  <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Actividad</th><th>Tipo</th><th>Relacionado con</th><th>Responsable</th><th>Fecha</th><th>Prioridad</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      <tr th:each="activity : ${activities.content}">
+        <td><div class="fw-semibold" th:text="${activity.subject}">Actividad</div><span class="badge text-bg-danger mt-1" th:if="${activity.overdue}">Vencida</span></td>
+        <td><span class="badge text-bg-light border" th:text="${activity.activityType.label}">Tarea</span></td>
+        <td>
+          <a th:if="${activity.lead != null}" th:href="@{/leads/{id}(id=${activity.lead.id})}" th:text="${'Lead: ' + activity.lead.firstName + (activity.lead.lastName != null ? ' ' + activity.lead.lastName : '')}">Lead</a>
+          <a th:if="${activity.client != null}" th:href="@{/clients/{id}(id=${activity.client.id})}" th:text="${'Cliente: ' + (activity.client.clientType.name() == 'COMPANY' ? activity.client.companyName : activity.client.firstName + (activity.client.lastName != null ? ' ' + activity.client.lastName : ''))}">Cliente</a>
+          <a th:if="${activity.opportunity != null}" th:href="@{/opportunities/{id}(id=${activity.opportunity.id})}" th:text="${'Oportunidad: ' + activity.opportunity.name}">Oportunidad</a>
+          <span class="text-body-secondary" th:if="${activity.lead == null and activity.client == null and activity.opportunity == null}">General</span>
+        </td>
+        <td th:text="${activity.owner != null ? activity.owner.firstName + ' ' + activity.owner.lastName : 'Sin responsable'}">Responsable</td>
+        <td class="text-nowrap"><div th:text="${activity.dueAt != null ? #temporals.format(activity.dueAt, 'dd/MM/yyyy HH:mm') : activity.scheduledAt != null ? #temporals.format(activity.scheduledAt, 'dd/MM/yyyy HH:mm') : '-'}">-</div><small class="text-body-secondary" th:if="${activity.dueAt != null}">Fecha limite</small><small class="text-body-secondary" th:if="${activity.dueAt == null and activity.scheduledAt != null}">Programada</small></td>
+        <td><span class="badge" th:classappend="${activity.priority.name() == 'HIGH' ? ' text-bg-danger' : activity.priority.name() == 'LOW' ? ' text-bg-secondary' : ' text-bg-warning'}" th:text="${activity.priority.label}">Media</span></td>
+        <td><span class="badge" th:classappend="${activity.status.name() == 'COMPLETED' ? ' text-bg-success' : activity.status.name() == 'CANCELLED' ? ' text-bg-secondary' : activity.status.name() == 'IN_PROGRESS' ? ' text-bg-primary' : ' text-bg-info'}" th:text="${activity.status.label}">Pendiente</span></td>
+        <td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-primary" th:href="@{/activities/{id}(id=${activity.id})}" title="Ver"><i class="bi bi-eye"></i></a> <a class="btn btn-sm btn-outline-secondary" th:if="${activity.open}" th:href="@{/activities/{id}/edit(id=${activity.id})}" title="Editar"><i class="bi bi-pencil"></i></a></td>
+      </tr>
+      <tr th:if="${activities.empty}"><td colspan="8" class="text-center text-body-secondary py-5">No se encontraron actividades.</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <nav class="mt-3" th:if="${activities.totalPages > 1}" aria-label="Paginacion de actividades"><ul class="pagination justify-content-center">
+    <li class="page-item" th:classappend="${activities.first} ? ' disabled' : ''"><a class="page-link" th:href="@{/activities(page=${activities.number - 1},q=${q},type=${selectedType},status=${selectedStatus},priority=${selectedPriority},ownerId=${selectedOwnerId},leadId=${selectedLeadId},clientId=${selectedClientId},opportunityId=${selectedOpportunityId},scope=${selectedScope})}">Anterior</a></li>
+    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, activities.totalPages - 1)}" th:classappend="${pageNumber == activities.number} ? ' active' : ''"><a class="page-link" th:text="${pageNumber + 1}" th:href="@{/activities(page=${pageNumber},q=${q},type=${selectedType},status=${selectedStatus},priority=${selectedPriority},ownerId=${selectedOwnerId},leadId=${selectedLeadId},clientId=${selectedClientId},opportunityId=${selectedOpportunityId},scope=${selectedScope})}">1</a></li>
+    <li class="page-item" th:classappend="${activities.last} ? ' disabled' : ''"><a class="page-link" th:href="@{/activities(page=${activities.number + 1},q=${q},type=${selectedType},status=${selectedStatus},priority=${selectedPriority},ownerId=${selectedOwnerId},leadId=${selectedLeadId},clientId=${selectedClientId},opportunityId=${selectedOpportunityId},scope=${selectedScope})}">Siguiente</a></li>
+  </ul></nav>
+</main>
+</html>

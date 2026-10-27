@@ -12,6 +12,40 @@
   width: 100%;
   max-width: 26rem;
 }
+.dashboard-period-select {
+  min-width: 10rem;
+}
+.dashboard-kpi {
+  min-height: 10.5rem;
+}
+.dashboard-progress {
+  height: 0.45rem;
+  background-color: var(--bs-secondary-bg);
+}
+.dashboard-month-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+.dashboard-month-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.dashboard-month-row > span:first-child {
+  width: 2.4rem;
+}
+.dashboard-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--bs-border-color);
+}
+.dashboard-time {
+  width: 3.5rem;
+  color: var(--bs-secondary-color);
+  font-variant-numeric: tabular-nums;
+}
 .pipeline-board {
   display: flex;
   gap: 1rem;

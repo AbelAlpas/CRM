@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section class="mt-4" th:fragment="relatedActivities(items, createUrl)">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><div><h2 class="h4 mb-1">Actividades</h2><p class="text-body-secondary mb-0">Acciones comerciales relacionadas.</p></div><a class="btn btn-primary" th:href="${createUrl}"><i class="bi bi-plus-lg me-1"></i>Nueva actividad</a></div>
+  <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Actividad</th><th>Tipo</th><th>Fecha</th><th>Prioridad</th><th>Estado</th><th></th></tr></thead><tbody>
+    <tr th:each="activity : ${items}"><td><span class="fw-semibold" th:text="${activity.subject}">Actividad</span><span class="badge text-bg-danger ms-2" th:if="${activity.overdue}">Vencida</span></td><td th:text="${activity.activityType.label}">Tarea</td><td th:text="${activity.dueAt != null ? #temporals.format(activity.dueAt, 'dd/MM/yyyy HH:mm') : activity.scheduledAt != null ? #temporals.format(activity.scheduledAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td><td th:text="${activity.priority.label}">Media</td><td><span class="badge" th:classappend="${activity.status.name() == 'COMPLETED' ? ' text-bg-success' : activity.status.name() == 'CANCELLED' ? ' text-bg-secondary' : activity.status.name() == 'IN_PROGRESS' ? ' text-bg-primary' : ' text-bg-info'}" th:text="${activity.status.label}">Pendiente</span></td><td class="text-end"><a class="btn btn-sm btn-outline-primary" th:href="@{/activities/{id}(id=${activity.id})}">Ver</a></td></tr>
+    <tr th:if="${#lists.isEmpty(items)}"><td colspan="6" class="text-center text-body-secondary py-4">No hay actividades relacionadas.</td></tr>
+  </tbody></table></div></div>
+</section>
+</body>
+</html>

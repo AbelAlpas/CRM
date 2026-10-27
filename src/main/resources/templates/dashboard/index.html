@@ -5,46 +5,53 @@
   th:replace="~{fragments/layout :: shell(~{::main})}"
 >
   <main>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h1 class="h3 mb-1">Dashboard</h1>
-        <p class="text-body-secondary mb-0">Resumen operativo del CRM.</p>
-      </div>
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div><h1 class="h3 mb-1">Dashboard</h1><p class="text-body-secondary mb-0">Resumen comercial del CRM.</p></div>
+      <form class="d-flex align-items-center gap-2" method="get" th:action="@{/dashboard}">
+        <label class="small text-body-secondary" for="period">Periodo</label>
+        <select class="form-select form-select-sm dashboard-period-select" id="period" name="period" onchange="this.form.submit()">
+          <option th:each="option : ${periods}" th:value="${option.name()}" th:text="${option.label}" th:selected="${option == dashboard.period}">Este mes</option>
+        </select>
+      </form>
     </div>
-    <div class="row g-3">
-      <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <i class="bi bi-person-lines-fill fs-3 text-primary"></i>
-            <h2 class="h5 mt-3">Leads</h2>
-            <p class="text-body-secondary mb-0">
-              Modulo pendiente de implementacion.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <i class="bi bi-briefcase fs-3 text-primary"></i>
-            <h2 class="h5 mt-3">Oportunidades</h2>
-            <p class="text-body-secondary mb-0">
-              Modulo pendiente de implementacion.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <i class="bi bi-calendar-event fs-3 text-primary"></i>
-            <h2 class="h5 mt-3">Actividades</h2>
-            <p class="text-body-secondary mb-0">
-              Modulo pendiente de implementacion.
-            </p>
-          </div>
-        </div>
-      </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-xl-3"><div class="card dashboard-kpi h-100 border-start border-primary border-4"><div class="card-body">
+        <div class="d-flex justify-content-between gap-2"><span class="text-body-secondary">Leads nuevos</span><i class="bi bi-person-lines-fill text-primary fs-4"></i></div>
+        <div class="display-6 fw-semibold mt-2" th:text="${dashboard.leads.newInPeriod}">0</div><a class="small" th:href="@{/leads}">Ver Leads <i class="bi bi-arrow-right"></i></a>
+      </div></div></div>
+      <div class="col-sm-6 col-xl-3"><div class="card dashboard-kpi h-100 border-start border-success border-4"><div class="card-body">
+        <div class="d-flex justify-content-between gap-2"><span class="text-body-secondary">Clientes activos</span><i class="bi bi-people text-success fs-4"></i></div>
+        <div class="display-6 fw-semibold mt-2" th:text="${dashboard.clients.active}">0</div><div class="small text-body-secondary" th:text="${dashboard.clients.newInPeriod + ' nuevos en el periodo'}">0 nuevos en el periodo</div><a class="small" th:href="@{/clients}">Ver Clientes <i class="bi bi-arrow-right"></i></a>
+      </div></div></div>
+      <div class="col-sm-6 col-xl-3"><div class="card dashboard-kpi h-100 border-start border-warning border-4"><div class="card-body">
+        <div class="d-flex justify-content-between gap-2"><span class="text-body-secondary">Pipeline abierto</span><i class="bi bi-kanban text-warning fs-4"></i></div>
+        <div class="h3 fw-semibold mt-3 mb-2" th:text="${'S/ ' + #numbers.formatDecimal(dashboard.opportunities.openAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div><a class="small" th:href="@{/pipeline}">Ver Pipeline <i class="bi bi-arrow-right"></i></a>
+      </div></div></div>
+      <div class="col-sm-6 col-xl-3"><div class="card dashboard-kpi h-100 border-start border-info border-4"><div class="card-body">
+        <div class="d-flex justify-content-between gap-2"><span class="text-body-secondary">Ventas ganadas</span><i class="bi bi-trophy text-info fs-4"></i></div>
+        <div class="h3 fw-semibold mt-3 mb-2" th:text="${'S/ ' + #numbers.formatDecimal(dashboard.opportunities.wonAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div><a class="small" th:href="@{/opportunities(status='WON')}">Ver oportunidades <i class="bi bi-arrow-right"></i></a>
+      </div></div></div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4"><div class="card h-100"><div class="card-body"><div class="text-body-secondary small">Valor ponderado</div><div class="h4 mb-0 mt-2" th:text="${'S/ ' + #numbers.formatDecimal(dashboard.opportunities.weightedAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div><small class="text-body-secondary" th:text="${dashboard.opportunities.open + ' oportunidades abiertas'}">0 oportunidades abiertas</small></div></div></div>
+      <div class="col-md-4"><div class="card h-100"><div class="card-body"><div class="text-body-secondary small">Tasa de cierre</div><div class="h4 mb-0 mt-2" th:text="${#numbers.formatDecimal(dashboard.opportunities.closureRate, 1, 'POINT', 1, 'POINT') + '%'}">0.0%</div><small class="text-body-secondary" th:text="${dashboard.opportunities.won + ' ganadas · ' + dashboard.opportunities.lost + ' perdidas'}">0 ganadas · 0 perdidas</small></div></div></div>
+      <div class="col-md-4"><div class="card h-100"><div class="card-body"><div class="text-body-secondary small">Actividades</div><div class="d-flex gap-3 align-items-baseline mt-2"><span class="h4 mb-0" th:text="${dashboard.activities.pending}">0</span><span class="small text-body-secondary">pendientes</span><span class="h4 mb-0 text-danger" th:text="${dashboard.activities.overdue}">0</span><span class="small text-body-secondary">vencidas</span></div><a class="small" th:href="@{/activities}">Ver actividades <i class="bi bi-arrow-right"></i></a></div></div></div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-xl-7"><section class="card h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Pipeline por etapa</h2><span class="small text-body-secondary">Oportunidades abiertas</span></div><div th:if="${#lists.isEmpty(dashboard.pipelineStages)}" class="text-center text-body-secondary py-4">No hay datos disponibles.</div><div th:each="stage : ${dashboard.pipelineStages}" class="mb-3"><div class="d-flex justify-content-between gap-3 mb-1"><span class="fw-semibold" th:text="${stage.name}">Prospección</span><span class="small text-body-secondary" th:text="${stage.opportunityCount + ' oportunidades'}">0 oportunidades</span></div><div class="progress dashboard-progress"><div class="progress-bar bg-primary" th:classappend="${stage.barWidth > 0 ? ' w-' + stage.barWidth : ''}"></div></div><div class="small text-body-secondary mt-1" th:text="${'S/ ' + #numbers.formatDecimal(stage.totalAmount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div></div></div></section></div>
+      <div class="col-xl-5"><section class="card h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Ventas por mes</h2><span class="small text-body-secondary">Año actual</span></div><div class="dashboard-month-grid"><div th:each="month : ${dashboard.monthlySales}" class="dashboard-month-row"><span class="small text-body-secondary"> <span th:text="${month.label}">Ene</span></span><div class="progress dashboard-progress flex-grow-1"><div class="progress-bar bg-success" th:classappend="${month.barWidth > 0 ? ' w-' + month.barWidth : ''}"></div></div><span class="small text-nowrap" th:text="${'S/ ' + #numbers.formatDecimal(month.totalAmount, 1, 'COMMA', 0, 'POINT')}">S/ 0</span></div></div></div></section></div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-lg-5"><section class="card h-100"><div class="card-body"><h2 class="h5 mb-3">Leads por estado</h2><div th:each="status : ${dashboard.leadStatuses}" class="d-flex justify-content-between border-bottom py-2"><span th:text="${status.label}">Nuevo</span><span class="badge text-bg-light" th:text="${status.count}">0</span></div></div></section></div>
+      <div class="col-lg-7"><section class="card h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Actividades</h2><a class="small" th:href="@{/activities}">Ver todas</a></div><div class="d-flex gap-4 mb-3"><div><div class="h4 mb-0" th:text="${dashboard.activities.dueToday}">0</div><small class="text-body-secondary">de hoy</small></div><div><div class="h4 mb-0" th:text="${dashboard.activities.completedInPeriod}">0</div><small class="d-block text-body-secondary">completadas</small></div></div><h3 class="h6 text-body-secondary mb-2">Para hoy</h3><div th:if="${#lists.isEmpty(dashboard.todayActivities)}" class="text-body-secondary small mb-3">No hay actividades para hoy.</div><div th:each="activity : ${dashboard.todayActivities}" class="dashboard-activity-row"><div class="dashboard-time" th:text="${activity.eventAt != null ? #temporals.format(activity.eventAt, 'HH:mm') : '--:--'}">10:00</div><div class="flex-grow-1"><a class="fw-semibold text-decoration-none" th:href="@{/activities/{id}(id=${activity.id})}" th:text="${activity.subject}">Actividad</a><div class="small text-body-secondary" th:text="${activity.type + (activity.relatedName != null ? ' · ' + activity.relatedName : '')}">CALL</div></div><span class="badge text-bg-danger" th:if="${activity.overdue}">Vencida</span></div><h3 class="h6 text-body-secondary mt-4 mb-2">Próximas</h3><div th:if="${#lists.isEmpty(dashboard.upcomingActivities)}" class="text-body-secondary small">No hay actividades próximas.</div><div th:each="activity : ${dashboard.upcomingActivities}" class="dashboard-activity-row"><div class="dashboard-time" th:text="${activity.eventAt != null ? #temporals.format(activity.eventAt, 'dd/MM HH:mm') : '--/-- --:--'}">27/10 10:00</div><div class="flex-grow-1"><a class="fw-semibold text-decoration-none" th:href="@{/activities/{id}(id=${activity.id})}" th:text="${activity.subject}">Actividad</a><div class="small text-body-secondary" th:text="${activity.type + (activity.relatedName != null ? ' · ' + activity.relatedName : '')}">CALL</div></div></div></div></section></div>
+    </div>
+
+    <div class="row g-3"><div class="col-lg-6"><section class="card h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Leads recientes</h2><a class="small" th:href="@{/leads}">Ver todos</a></div><div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Nombre</th><th>Vendedor</th><th>Estado</th><th>Fecha</th></tr></thead><tbody><tr th:each="lead : ${dashboard.recentLeads}"><td><a class="text-decoration-none" th:href="@{/leads/{id}(id=${lead.id})}" th:text="${lead.name}">Lead</a><small class="d-block text-body-secondary" th:text="${lead.company}">Empresa</small></td><td class="small" th:text="${lead.seller}">Vendedor</td><td><span class="badge text-bg-light" th:text="${lead.status}">Nuevo</span></td><td class="small text-nowrap" th:text="${#temporals.format(lead.createdAt, 'dd/MM/yyyy')}">01/01/2026</td></tr><tr th:if="${#lists.isEmpty(dashboard.recentLeads)}"><td colspan="4" class="text-center text-body-secondary py-4">No hay leads recientes.</td></tr></tbody></table></div></div></section></div>
+      <div class="col-lg-6"><section class="card h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Próximos cierres</h2><a class="small" th:href="@{/opportunities}">Ver todos</a></div><div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Oportunidad</th><th>Monto</th><th>Cierre</th></tr></thead><tbody><tr th:each="opportunity : ${dashboard.upcomingOpportunities}"><td><a class="text-decoration-none" th:href="@{/opportunities/{id}(id=${opportunity.id})}" th:text="${opportunity.name}">Oportunidad</a><small class="d-block text-body-secondary" th:text="${opportunity.client + ' · ' + opportunity.stage}">Cliente</small></td><td class="text-nowrap" th:text="${'S/ ' + #numbers.formatDecimal(opportunity.amount, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</td><td class="text-nowrap" th:classappend="${opportunity.overdue} ? ' text-danger fw-semibold' : ''"><span th:text="${#temporals.format(opportunity.expectedCloseDate, 'dd/MM/yyyy')}">01/01/2026</span><small class="d-block" th:if="${opportunity.overdue}">Vencida</small></td></tr><tr th:if="${#lists.isEmpty(dashboard.upcomingOpportunities)}"><td colspan="3" class="text-center text-body-secondary py-4">No hay oportunidades próximas a cerrar.</td></tr></tbody></table></div></div></section></div>
     </div>
   </main>
 </html>
